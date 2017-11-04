@@ -16,7 +16,7 @@ Other ports of Shen by the Shen-JVM author includes
 * [iOS version of Shen-C](https://chatolab.wordpress.com/2017/07/10/shen-programming-language-for-ios/), which is a full featured Shen REPL with a customized keyboard for both iPhone and iPad available on the App Store
 
 ## Download from releases
-Download the latest JAR file from [releases](https://github.com/otabat/shen-jvm/releases)
+Download the JAR file (shen-jvm-xxx.jar) from [releases](https://github.com/otabat/shen-jvm/releases)
 
 ## Build from sources
 TODO: Currently finding a clean way to share the build settings of IntelliJ IDEA
