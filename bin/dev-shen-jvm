@@ -1,0 +1,9 @@
+#!/bin/sh
+
+BASE_DIR=$(dirname "$0")
+SHEN_JVM_OPTS="-Xms200m -Xmx2g -Xss4m"
+#SHEN_JVM_OPTS="-Xms200m -Xmx2g -Xss4m -XX:+UnlockCommercialFeatures -XX:+FlightRecorder"
+SHEN_JVM_CLASS_PATH="${BASE_DIR}/../out/production/shen-jvm:lib/asm-all-5.2.jar:lib/commons-io-2.5.jar:lib/commons-lang3-3.5.jar"
+echo ${SHEM_JVM_CLASS_PATH}
+
+rlwrap java ${SHEN_JVM_OPTS} -cp ${SHEN_JVM_CLASS_PATH} shen.main

@@ -1,0 +1,15 @@
+.DS_Store
+*.iml
+.idea/
+*.jar
+*.war
+*.ear
+*.log
+/out
+/tmp
+build/
+*.class
+*.dex
+.gradle/
+.idea/
+/shen/classes
