@@ -19,14 +19,7 @@ Other ports of Shen by the Shen-JVM author includes
 1. Download the [latest JAR file]
 
 ## Build from sources
-Since the author uses IntelliJ IDEA to develop Shen-JVM, it is recommended for the build.
-1. Download Shen-JVM project files
-```
-git clone https://github.com/otabat/shen-jvm
-```
-2. Open Shen-JVM project in IntelliJ IDEA
-3. Run KLMain, which compiles Kλ source files to Java class files
-4. Create a JAR file (Build -> Build Artifacts -> Build), which the file will be created as `PROJECT_HOME/out/artifacts/shen_jvm_jar/shen-jvm.jar`
+TODO: Currently finding a clean way to share the build settings of IntelliJ IDEA
 
 ## Run Shen-JVM (from releases)
 ```
@@ -43,13 +36,7 @@ java -Xms200m -Xmx2g -Xss4m -jar shen-jvm-xxx.jar
 ```
 
 ## Run Shen-JVM (built from sources)
-```
-java -jar PROJECT_HOME/out/artifacts/shen_jvm_jar/shen-jvm.jar
-```
-or the shell script using rlwrap with some JVM options
-```
-PROJECT_HOME/bin/shen-jvm
-```
+TODO
 
 ## Run Shen Test
 ```shen
