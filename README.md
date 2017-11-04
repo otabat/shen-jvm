@@ -68,7 +68,7 @@ or with an exit status
 ## License
 #### Shen
 Copyright (c) 2010-2015, Mark Tarver  
-Shen is released under the [BSD License](https://github.com/otabat/shen-jvm/tree/master/src/shen/license.txt).  
+Shen is released under the [BSD License](https://github.com/otabat/shen-jvm/blob/master/shen/src/shen/license.txt).
 
 #### Shen-JVM
 Copyright (c) 2017, Tatsuya Tsuda  
