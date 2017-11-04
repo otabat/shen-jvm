@@ -34,6 +34,10 @@ Especially the thread stack size is important and otherwise a stack overflow mig
 ```
 java -Xms200m -Xmx2g -Xss4m -jar shen-jvm-xxx.jar
 ```
+or
+```
+rlwrap java -Xms200m -Xmx2g -Xss4m -jar shen-jvm-xxx.jar
+```
 
 ## Run Shen-JVM (built from sources)
 TODO
