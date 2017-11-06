@@ -19,7 +19,21 @@ Other ports of Shen by the Shen-JVM author includes
 Download the JAR file (shen-jvm-xxx.jar) from [releases](https://github.com/otabat/shen-jvm/releases)
 
 ## Build from sources
-TODO: Currently finding a clean way to share the build settings of IntelliJ IDEA
+Shen-JVM uses Gradle as a build tool.
+* [Install Gradle](https://gradle.org/install/)
+* Setup Gradle wrapper
+```
+gradle wrapper
+```
+* Build Shen-JVM
+```
+./gradlew uberJar
+```
+or
+```
+gradlew uberJar
+```
+The JAR file will be generated as `PROJECT_HOME/build/libs/shen-jvm-xxx.jar`
 
 ## Run Shen-JVM (from releases)
 ```
@@ -40,7 +54,13 @@ rlwrap java -Xms200m -Xmx2g -Xss4m -jar shen-jvm-xxx.jar
 ```
 
 ## Run Shen-JVM (built from sources)
-TODO
+```
+java -jar ./build/libs/shen-jvm-xxx.jar
+```
+or with rlwrap and Java options
+```
+rlwrap java -Xms200m -Xmx2g -Xss4m -jar ./build/libs/shen-jvm-xxx.jar
+```
 
 ## Run Shen Test
 ```shen
