@@ -11,5 +11,8 @@ build/
 *.class
 *.dex
 .gradle/
+gradle
+gradlew
+gradlew.bat
 .idea/
 /shen/classes
