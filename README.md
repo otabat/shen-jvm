@@ -33,6 +33,16 @@ or
 ```
 gradlew uberJar
 ```
+
+* Clean previous builds and build Shen-JVM
+```
+./gradlew clean uberJar
+```
+or
+```
+gradlew clean uberJar
+```
+
 The JAR file will be generated as `PROJECT_HOME/build/libs/shen-jvm-xxx.jar`
 
 ## Run Shen-JVM (from releases)
