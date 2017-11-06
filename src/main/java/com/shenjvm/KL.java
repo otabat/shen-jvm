@@ -7,7 +7,7 @@ public class KL {
     public static final ClassLoader SYSTEM_CLASS_LOADER = ClassLoader.getSystemClassLoader();
     public static final String rootDir = System.getProperty("user.dir");
     public static final String shenRootDir = rootDir + "/shen";
-    public static final String shenClassRootDir = rootDir + "/out/production/shen-jvm";
+    public static final String shenClassRootDir = rootDir + "/build/classes/java/main";
     public static final String shenSrcRootDir = shenRootDir + "/src";
     public static final KLIStream STD_INPUT_STREAM = new KLStdInStream();
     public static final KLIStream STD_OUTPUT_STREAM = new KLStdOutStream();

@@ -3,6 +3,6 @@
 BASE_DIR=$(dirname "$0")
 SHEN_JVM_OPTS="-Xms200m -Xmx2g -Xss4m"
 #SHEN_JVM_OPTS="-Xms200m -Xmx2g -Xss4m -XX:+UnlockCommercialFeatures -XX:+FlightRecorder"
-SHEN_JVM_JAR_PATH="${BASE_DIR}/../out/artifacts/shen_jvm_jar/shen-jvm.jar"
+SHEN_JVM_JAR_PATH="${BASE_DIR}/../build/libs/shen-jvm.jar"
 
 rlwrap java ${SHEN_JVM_OPTS} -jar ${SHEN_JVM_JAR_PATH}
