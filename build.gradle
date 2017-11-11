@@ -57,3 +57,11 @@ task devUberJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
         attributes 'Main-Class': 'shen.main'
     }
 }
+
+task runDevUberJar(type: JavaExec) {
+    classpath = files('build/libs/shen-jvm.jar')
+    classpath += sourceSets.main.runtimeClasspath
+    main = "shen.main"
+    jvmArgs = ['-Xms200m', '-Xmx2g', '-Xss4m']
+    standardInput = System.in
+}
