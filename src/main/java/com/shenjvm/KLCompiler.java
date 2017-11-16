@@ -108,23 +108,38 @@ public class KLCompiler implements Opcodes {
                     ga.loadLocal(local.pos);
                     retTypeCand = KLASM.OBJECT_TYPE;
                     break;
-                case FREE_VARIABLE: ga.push(local.field.decClassName);
-                    ga.invokeStatic(KLASM.CLASS_TYPE, KLMethodPool.forNameMethod);
-                    ga.push(local.field.name);
-                    ga.invokeVirtual(KLASM.CLASS_TYPE, KLMethodPool.getFieldMethod);
-                    ga.loadThis();
-                    ga.invokeVirtual(KLASM.REFLECT_FIELD_TYPE, KLMethodPool.getMethod);
+                case FREE_VARIABLE:
+                    if (isStaticCompile) {
+                        ga.loadThis();
+                        ga.getField(local.field.decType, local.field.name, KLASM.OBJECT_TYPE);
+                    } else {
+                        ga.push(local.field.decClassName);
+                        ga.invokeStatic(KLASM.CLASS_TYPE, KLMethodPool.forNameMethod);
+                        ga.push(local.field.name);
+                        ga.invokeVirtual(KLASM.CLASS_TYPE, KLMethodPool.getFieldMethod);
+                        ga.loadThis();
+                        ga.invokeVirtual(KLASM.REFLECT_FIELD_TYPE, KLMethodPool.getMethod);
+                    }
                     retTypeCand = KLASM.OBJECT_TYPE;
                     break;
                 case EXTERNAL_FREE_VARIABLE:
-                    ga.push(freeLmdClassNames.get(freeLmdClassNames.size() - 1));
-                    ga.invokeStatic(KLASM.CLASS_TYPE, KLMethodPool.forNameMethod);
-                    ga.push(local.field.decClassFieldName);
-                    ga.invokeVirtual(KLASM.CLASS_TYPE, KLMethodPool.getFieldMethod);
-                    ga.loadThis();
-                    ga.invokeVirtual(KLASM.REFLECT_FIELD_TYPE, KLMethodPool.getMethod);
-                    ga.checkCast(local.field.decType);
-                    ga.getField(local.field.decType, local.field.name, KLASM.OBJECT_TYPE);
+                    if (isStaticCompile) {
+                        String freeLmdClassName = freeLmdClassNames.get(freeLmdClassNames.size() - 1);
+                        ga.loadThis();
+                        ga.getField(Type.getType(dottedClassNameToInternalClassName(freeLmdClassName)),
+                                local.field.decClassFieldName, local.field.decType);
+                        ga.checkCast(local.field.decType);
+                        ga.getField(local.field.decType, local.field.name, KLASM.OBJECT_TYPE);
+                    } else {
+                        ga.push(freeLmdClassNames.get(freeLmdClassNames.size() - 1));
+                        ga.invokeStatic(KLASM.CLASS_TYPE, KLMethodPool.forNameMethod);
+                        ga.push(local.field.decClassFieldName);
+                        ga.invokeVirtual(KLASM.CLASS_TYPE, KLMethodPool.getFieldMethod);
+                        ga.loadThis();
+                        ga.invokeVirtual(KLASM.REFLECT_FIELD_TYPE, KLMethodPool.getMethod);
+                        ga.checkCast(local.field.decType);
+                        ga.getField(local.field.decType, local.field.name, KLASM.OBJECT_TYPE);
+                    }
                     retTypeCand = KLASM.OBJECT_TYPE;
                     break;
             }
@@ -540,7 +555,7 @@ public class KLCompiler implements Opcodes {
 
         ClassWriter lmdCw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         lmdCw.visit(V1_6, ACC_PUBLIC, fqLmdSlashedClassName, null, "com/shenjvm/KLALambda", null);
-        Type lmdType = Type.getType(fqLmdSlashedClassName);
+        Type lmdType = Type.getType(dottedClassNameToInternalClassName(fqLmdClassName));
 
         GeneratorAdapter ctorGa = new GeneratorAdapter(ACC_PUBLIC, KLMethodPool.consructorMethod1, null, null, lmdCw);
         ctorGa.loadThis();
