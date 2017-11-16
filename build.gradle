@@ -36,6 +36,11 @@ task runKLMain(type: JavaExec) {
     main = "com.shenjvm.KLMain"
 }
 
+task compileAndRunKLMain(type: JavaExec, dependsOn: 'compileJava') {
+    classpath sourceSets.main.runtimeClasspath
+    main = "com.shenjvm.KLMain"
+}
+
 task uberJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar, dependsOn: ['runKLMain']) {
     baseName = 'shen-jvm'
     classifier = null

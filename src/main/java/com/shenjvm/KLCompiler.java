@@ -1032,9 +1032,9 @@ public class KLCompiler implements Opcodes {
         return res;
     }
 
-    public static void loadCompilers(KLCompiler[] compilers) {
+    public static void loadCompilersAndPrint(KLCompiler[] compilers) {
         for (int i = 0; i < compilers.length; ++i)
-            compilers[i].load();
+            KL.d(compilers[i].load());
     }
 
     public static void write(String classRootDir, String fqSlashedClassName, byte[] compiledBytes) {
@@ -1083,7 +1083,7 @@ public class KLCompiler implements Opcodes {
     public static void compileTestKLFiles(String fileName, boolean isStaticCompile) {
         String[][] fileNames = new String[][]{{"kl", fileName}};
         KLCompiler[] compilers = KLCompiler.compileFiles(fileNames, "shen", isStaticCompile);
-        loadCompilers(compilers);
+        loadCompilersAndPrint(compilers);
     }
 
     public static void compileMain() {
