@@ -8,6 +8,6 @@ public class KLMain {
         KLInit.init();
         KLCompiler.compileKLFiles(isStaticCompile);
         KLCompiler.compileMain();
-        //KLCompiler.compileTestKLFiles("test39", isStaticCompile);
+        //KLCompiler.compileTestKLFiles("test", isStaticCompile);
     }
 }

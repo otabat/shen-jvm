@@ -29,4 +29,9 @@ public class KLExtension {
         System.exit(0);
         return KL.EMPTY_LIST;
     }
+
+    public static Object sjPrintln(Object o) {
+        System.out.println(o);
+        return o;
+    }
 }

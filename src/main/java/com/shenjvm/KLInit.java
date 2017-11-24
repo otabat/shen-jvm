@@ -53,8 +53,8 @@ public class KLInit {
                 KLASM.LONG_TYPE, "Long writeByte(Object,Object)", true);
         KLFunction readByteFun = new KLFunction(KLPrimitive.class, new Class[]{Object.class}, KLASM.LONG_TYPE,
                 "Long readByte(Object)", true);
-        KLFunction openFun = new KLFunction(KLPrimitive.class, new Class[]{Object.class, KLSymbol.class},
-                KLASM.KLISTREAM_TYPE, "com.shenjvm.KLIStream open(Object,com.shenjvm.KLSymbol)", true);
+        KLFunction openFun = new KLFunction(KLPrimitive.class, new Class[]{Object.class, Object.class},
+                KLASM.KLISTREAM_TYPE, "com.shenjvm.KLIStream open(Object,Object)", true);
         KLFunction closeFun = new KLFunction(KLPrimitive.class, new Class[]{Object.class}, KLASM.OBJECT_TYPE,
                 "java.util.ArrayList close(Object)", true);
         KLFunction getTimeFun = new KLFunction(KLPrimitive.class, new Class[]{Object.class}, KLASM.NUMBER_TYPE,
@@ -216,9 +216,12 @@ public class KLInit {
         KLFunction quitFun = new KLFunction(KLExtension.class, new Class[]{}, KLASM.OBJECT_TYPE,"Object quit()", true);
         KLFunction sjForwardDeclareFunctionFun = new KLFunction(KLExtension.class, new Class[]{Object.class,
                 Object.class}, KLASM.OBJECT_TYPE, "Object sjForwardDeclareFunction(Object,Object)", true);
+        KLFunction sjPrintlnFun = new KLFunction(KLExtension.class, new Class[]{Object.class}, KLASM.OBJECT_TYPE,
+                "Object sjPrintln(Object)", true);
 
         KLSymbol.setFun(KLSymbolPool.QUIT, quitFun);
         KLSymbol.setFun(KLSymbolPool.SHEN_JVM_FORWARD_DECLARE_FUNCTION, sjForwardDeclareFunctionFun);
+        KLSymbol.setFun(KLSymbolPool.SHEN_JVM_PRINTLN, sjPrintlnFun);
     }
 
     public static void initGlobalVariables() {
@@ -226,7 +229,7 @@ public class KLInit {
         KLPrimitive.set(KLSymbolPool.EARMUFF_HOME_DIRECTORY, "");
         KLPrimitive.set(KLSymbolPool.EARMUFF_IMPLEMENTATION, "Java");
         KLPrimitive.set(KLSymbolPool.EARMUFF_LANGUAGE, "Java");
-        KLPrimitive.set(KLSymbolPool.EARMUFF_PORT, "0.2.0");
+        KLPrimitive.set(KLSymbolPool.EARMUFF_PORT, "0.2.1");
         KLPrimitive.set(KLSymbolPool.EARMUFF_PORTERS, "Tatsuya Tsuda");
         KLPrimitive.set(KLSymbolPool.EARMUFF_STERROR, KL.STD_OUTPUT_STREAM);
         KLPrimitive.set(KLSymbolPool.EARMUFF_STOUTPUT, KL.STD_OUTPUT_STREAM);

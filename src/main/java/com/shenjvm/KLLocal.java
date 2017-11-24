@@ -12,8 +12,7 @@ public class KLLocal {
         FUNCTION_PARAMETER,
         LAMBDA_PARAMETER,
         LET_BINDING,
-        FREE_VARIABLE,
-        EXTERNAL_FREE_VARIABLE
+        FREE_VARIABLE
     }
 
     public KLLocal(LocalType localType, Type valType, int pos) {

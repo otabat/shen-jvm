@@ -161,7 +161,7 @@ public class KLPrimitive {
         return Long.valueOf(KLStream.readByte((KLBufferedReader)stm));
     }
 
-    public static KLIStream open(Object filePath, KLSymbol direction) {
+    public static KLIStream open(Object filePath, Object direction) {
         File filePathFile = new File((String)filePath);
         String combinedFilePath;
         if (filePathFile.isAbsolute())

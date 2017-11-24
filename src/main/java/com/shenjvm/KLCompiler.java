@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,22 +28,23 @@ public class KLCompiler implements Opcodes {
     public static String shenPackageName = "shen";
     public static String userPackageName = "user";
     public static String evalClassNamePrefix = "eval__";
-    public static String lmdClassNamePrefix = "lambda__";
+    public static String lmdMethodNamePrefix = "lambda__";
+    public static String closedEnvFieldNamePrefix = "l";
     public static int classFileId = 0;
-    public static int lmdClassFileId = 0;
     public static int methodNameId = 0;
     public static int autoIncSymNameId = 0;
+    public static int lmdMethodNameId = 0;
     public static final String autoIncSymNamePrefix = "G__";
     public ClassWriter cw;
     public GeneratorAdapter runGa;
     public HashMap<KLSymbol, KLLocal> locals;
-    public ArrayList<String> freeLmdClassNames;
     public String packageName;
     public String fqClassName;
     public String slashedPackageName;
     public String fqInternalClassName;
     public String fqSlashedClassName;
     public Type retTypeCand;
+    public Type type;
     public byte[] compiledBytes;
     public KLSymbol defunSym;
     public Label defunStartLabel;
@@ -109,37 +109,9 @@ public class KLCompiler implements Opcodes {
                     retTypeCand = KLASM.OBJECT_TYPE;
                     break;
                 case FREE_VARIABLE:
-                    if (isStaticCompile) {
-                        ga.loadThis();
-                        ga.getField(local.field.decType, local.field.name, KLASM.OBJECT_TYPE);
-                    } else {
-                        ga.push(local.field.decClassName);
-                        ga.invokeStatic(KLASM.CLASS_TYPE, KLMethodPool.forNameMethod);
-                        ga.push(local.field.name);
-                        ga.invokeVirtual(KLASM.CLASS_TYPE, KLMethodPool.getFieldMethod);
-                        ga.loadThis();
-                        ga.invokeVirtual(KLASM.REFLECT_FIELD_TYPE, KLMethodPool.getMethod);
-                    }
-                    retTypeCand = KLASM.OBJECT_TYPE;
-                    break;
-                case EXTERNAL_FREE_VARIABLE:
-                    if (isStaticCompile) {
-                        String freeLmdClassName = freeLmdClassNames.get(freeLmdClassNames.size() - 1);
-                        ga.loadThis();
-                        ga.getField(Type.getType(dottedClassNameToInternalClassName(freeLmdClassName)),
-                                local.field.decClassFieldName, local.field.decType);
-                        ga.checkCast(local.field.decType);
-                        ga.getField(local.field.decType, local.field.name, KLASM.OBJECT_TYPE);
-                    } else {
-                        ga.push(freeLmdClassNames.get(freeLmdClassNames.size() - 1));
-                        ga.invokeStatic(KLASM.CLASS_TYPE, KLMethodPool.forNameMethod);
-                        ga.push(local.field.decClassFieldName);
-                        ga.invokeVirtual(KLASM.CLASS_TYPE, KLMethodPool.getFieldMethod);
-                        ga.loadThis();
-                        ga.invokeVirtual(KLASM.REFLECT_FIELD_TYPE, KLMethodPool.getMethod);
-                        ga.checkCast(local.field.decType);
-                        ga.getField(local.field.decType, local.field.name, KLASM.OBJECT_TYPE);
-                    }
+                    ga.loadArg(0);
+                    ga.checkCast(local.field.decType);
+                    ga.getField(local.field.decType, local.field.name, KLASM.OBJECT_TYPE);
                     retTypeCand = KLASM.OBJECT_TYPE;
                     break;
             }
@@ -326,9 +298,9 @@ public class KLCompiler implements Opcodes {
         }
     }
 
-    public static String createFunctionSignature(String methodName, ArrayList<KLSymbol> params) {
-        StringBuilder funSig = new StringBuilder().append("Object ").append(methodName).append("(");
-        String[] classNames = new String[params.size()];
+    public static String createFunctionSignature(String methodName, String retTypeName, int paramSize) {
+        StringBuilder funSig = new StringBuilder().append(retTypeName). append(" ").append(methodName).append("(");
+        String[] classNames = new String[paramSize];
         Arrays.fill(classNames, "Object");
         String d = "";
         for (String s : classNames) {
@@ -340,7 +312,7 @@ public class KLCompiler implements Opcodes {
     }
 
     public void generateDefunMethod(String methodName, ArrayList<KLSymbol> params, Object body, ClassWriter cw) {
-        String funSig = createFunctionSignature(methodName, params);
+        String funSig = createFunctionSignature(methodName, "Object", params.size());
         Method method = Method.getMethod(funSig);
         GeneratorAdapter ga = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, method, null, null, cw);
         defunStartLabel = ga.mark();
@@ -366,7 +338,7 @@ public class KLCompiler implements Opcodes {
         ga.push(methodName);
         generateFunctionParameterTypes(ga, params.size());
         ga.invokeVirtual(KLASM.CLASS_TYPE, KLMethodPool.getDeclaredMethodMethod);
-        ga.storeLocal(localPos, Type.getType(Class.class));
+        ga.storeLocal(localPos, KLASM.CLASS_TYPE);
 
         ga.loadLocal(localPos);
         ga.push(true);
@@ -392,7 +364,7 @@ public class KLCompiler implements Opcodes {
         ga.dup();
 
         if (isStaticCompile) {
-            ga.push(Type.getType(fqInternalClassName));
+            ga.push(type);
             generateFunctionParameters(ga, params);
             generateFunctionParameterTypes(ga, params.size());
             ga.getStatic(KLASM.KLASM_TYPE, "OBJECT_TYPE", KLASM.ASM_TYPE_TYPE);
@@ -471,67 +443,67 @@ public class KLCompiler implements Opcodes {
         defunSym = null;
     }
 
-    public static boolean isFreeSymbolLetExpr(KLSymbol sym, ArrayList<Object> ast) {
+    public static boolean isClosedSymbolLetExpr(KLSymbol sym, ArrayList<Object> ast) {
         if (sym == ast.get(1))
             return false;
         if (sym == ast.get(2) || sym == ast.get(3))
             return true;
         if (ast.get(3) instanceof ArrayList)
-            return isFreeSymbolList(sym, (ArrayList<Object>)ast.get(3));
+            return isClosedSymbolList(sym, (ArrayList<Object>)ast.get(3));
         return false;
     }
 
-    public static boolean isFreeSymbolLambdaExpr(KLSymbol sym, ArrayList<Object> ast) {
+    public static boolean isClosedSymbolLambdaExpr(KLSymbol sym, ArrayList<Object> ast) {
         if (ast.size() == 2)
-            return isFreeSymbol(sym, ast.get(1));
+            return isClosedSymbol(sym, ast.get(1));
         if (sym == ast.get(1))
             return false;
-        return isFreeSymbol(sym, ast.get(2));
+        return isClosedSymbol(sym, ast.get(2));
     }
 
-    public static boolean isFreeSymbolList(KLSymbol sym, ArrayList<Object> ast) {
+    public static boolean isClosedSymbolList(KLSymbol sym, ArrayList<Object> ast) {
         if (ast == KL.EMPTY_LIST)
             return false;
         Object head = ast.get(0);
         if (head == KLSymbolPool.LET)
-            return isFreeSymbolLetExpr(sym, ast);
+            return isClosedSymbolLetExpr(sym, ast);
         else if (head == KLSymbolPool.LAMBDA)
-            return isFreeSymbolLambdaExpr(sym, ast);
+            return isClosedSymbolLambdaExpr(sym, ast);
         else {
-            boolean isFreeSym = false;
+            boolean isClosedSym = false;
             for (int i = 0; i < ast.size(); ++i) {
-                if (isFreeSymbol(sym, ast.get(i))) {
-                    isFreeSym = true;
+                if (isClosedSymbol(sym, ast.get(i))) {
+                    isClosedSym = true;
                     break;
                 }
             }
-            return isFreeSym;
+            return isClosedSym;
         }
     }
 
-    public static boolean isFreeSymbol(KLSymbol sym, Object body) {
+    public static boolean isClosedSymbol(KLSymbol sym, Object body) {
         if (sym == body) {
            return true;
         } else if (body instanceof ArrayList) {
             ArrayList<Object> bodyAst = (ArrayList<Object>)body;
-            return isFreeSymbolList(sym, bodyAst);
+            return isClosedSymbolList(sym, bodyAst);
         } else {
             return false;
         }
     }
 
-    public static ArrayList<KLSymbol> findFreeSyms(HashMap<KLSymbol, KLLocal> locals, Object body, KLSymbol lmdParam) {
+    public static ArrayList<KLSymbol> findClosedSymbols(HashMap<KLSymbol, KLLocal> locals, Object body, KLSymbol lmdParam) {
         if (locals == null)
             return null;
-        ArrayList<KLSymbol> freeSyms = null;
+        ArrayList<KLSymbol> closedSyms = null;
         for (KLSymbol localSym: locals.keySet()) {
-            if (localSym != lmdParam && isFreeSymbol(localSym, body)) {
-                if (freeSyms == null)
-                    freeSyms = new ArrayList<KLSymbol>();
-                freeSyms.add(localSym);
+            if (localSym != lmdParam && isClosedSymbol(localSym, body)) {
+                if (closedSyms == null)
+                    closedSyms = new ArrayList<KLSymbol>();
+                closedSyms.add(localSym);
             }
         }
-        return freeSyms;
+        return closedSyms;
     }
 
     public static String dottedClassNameToInternalClassName(String dottedClassName) {
@@ -545,144 +517,141 @@ public class KLCompiler implements Opcodes {
         return internalClssName.append("L").append(slashedClassName).append(";").toString();
     }
 
+    public String createLambdaSignature(String methodName, int paramSize) {
+        StringBuilder lmdSig = new StringBuilder().append("Object ").append(methodName).append("(com.shenjvm.KLAClosedEnv");
+        if (paramSize == 1)
+            lmdSig.append(",Object");
+        lmdSig.append(")");
+        return lmdSig.toString();
+    }
+
+    public void generateKLLambdaInstance(GeneratorAdapter ga, int paramSize) {
+        ga.newInstance(KLASM.KLLAMBDA_TYPE);
+        ga.dup();
+        ga.push(type);
+        ga.push(isStaticCompile);
+        ga.invokeConstructor(KLASM.KLLAMBDA_TYPE, KLMethodPool.klLambdaConstructorMethod2);
+    }
+
+    public static void generateLambdaParameterTypes(GeneratorAdapter ga, int paramSize) {
+        ga.push(paramSize + 1);
+        ga.newArray(KLASM.CLASS_TYPE);
+
+        ga.dup();
+        ga.push(0);
+        ga.push(KLASM.KLACLOSEDENV_TYPE);
+        ga.arrayStore(KLASM.CLASS_TYPE);
+
+        for (int i = 1; i < paramSize + 1; ++i) {
+            ga.dup();
+            ga.push(i);
+            ga.push(KLASM.OBJECT_TYPE);
+            ga.arrayStore(KLASM.CLASS_TYPE);
+        }
+    }
+
     public void compileLambdaExprHelper(GeneratorAdapter ga, ArrayList<Object> ast) {
-        KLSymbol newLmdParam = (ast.size() == 3) ? (KLSymbol)ast.get(1) : null;
-        Object body = (ast.size() == 3) ? ast.get(2) : ast.get(1);
+        KLSymbol newLmdParam;
+        Object body;
+        int paramSize = (ast.size() == 3) ? 1 : 0;
+        if (paramSize == 1) {
+            newLmdParam = (KLSymbol)ast.get(1);
+            body = ast.get(2);
+        } else {
+            newLmdParam = null;
+            body = ast.get(1);
+        }
 
-        ++lmdClassFileId;
-        String fqLmdClassName = packageName + "." + lmdClassNamePrefix + lmdClassFileId;
-        String fqLmdSlashedClassName = slashedPackageName + "/" + lmdClassNamePrefix + lmdClassFileId;
-
-        ClassWriter lmdCw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        lmdCw.visit(V1_6, ACC_PUBLIC, fqLmdSlashedClassName, null, "com/shenjvm/KLALambda", null);
-        Type lmdType = Type.getType(dottedClassNameToInternalClassName(fqLmdClassName));
-
-        GeneratorAdapter ctorGa = new GeneratorAdapter(ACC_PUBLIC, KLMethodPool.consructorMethod1, null, null, lmdCw);
-        ctorGa.loadThis();
-        ctorGa.invokeConstructor(KLASM.KLALAMBDA_TYPE, KLMethodPool.consructorMethod1);
-        ctorGa.returnValue();
-        ctorGa.endMethod();
-
-        Method invkMethod;
-        if (ast.size() == 3)
-            invkMethod = KLMethodPool.invokeMethod2;
-        else
-            invkMethod = KLMethodPool.invokeMethod1;
-        GeneratorAdapter invkGa = new GeneratorAdapter(ACC_PUBLIC, invkMethod, null, null, lmdCw);
+        String lmdMethodName = lmdMethodNamePrefix + ++lmdMethodNameId;
+        String lmdSig = createLambdaSignature(lmdMethodName, paramSize);
+        Method lmdMethod = Method.getMethod(lmdSig);
+        GeneratorAdapter lmdGa = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, lmdMethod, null, null, cw);
 
         HashMap<KLSymbol, KLLocal> oldLocals = locals;
         HashMap<KLSymbol, KLLocal> newLocals = new HashMap<KLSymbol, KLLocal>();
 
         if (newLmdParam != null) {
-            int lmdLocalPos = 0;
+            int lmdLocalPos = 1;
             KLLocal lmdLocal = new KLLocal(KLLocal.LocalType.LAMBDA_PARAMETER, KLASM.OBJECT_TYPE, lmdLocalPos);
             newLocals.put(newLmdParam, lmdLocal);
         }
 
-        ArrayList<KLSymbol> freeSyms = findFreeSyms(oldLocals, body, newLmdParam);
-        boolean isFreeSymExist = false;
-        if (freeSyms != null) {
-            isFreeSymExist = true;
-            for (KLSymbol freeSym : freeSyms) {
-                KLLocal oldLocal = oldLocals.get(freeSym);
-                if (oldLocal.localType == KLLocal.LocalType.FREE_VARIABLE) {
-                    oldLocal.field.decClassFieldName = createSafeJavaId(oldLocal.field.decClassName);
-                    KLLocal local = new KLLocal(KLLocal.LocalType.EXTERNAL_FREE_VARIABLE, oldLocal.valType,
-                            oldLocal.field);
-                    newLocals.put(freeSym, local);
-                } else if (oldLocal.localType == KLLocal.LocalType.EXTERNAL_FREE_VARIABLE) {
-                    newLocals.put(freeSym, oldLocal);
-                } else {
-                    String fieldName = createSafeJavaId(freeSym.name);
-                    lmdCw.visitField(ACC_PUBLIC, fieldName, KLASM.OBJECT_TYPE.getDescriptor(), null, null).visitEnd();
-                    Type valType = (oldLocal.valType == null) ? KLASM.OBJECT_TYPE : oldLocal.valType;
-                    KLField field = new KLField(lmdType, fqLmdClassName, valType, fieldName, false);
-                    KLLocal local = new KLLocal(KLLocal.LocalType.FREE_VARIABLE, valType, field);
-                    newLocals.put(freeSym, local);
-                }
-            }
-        }
-
-        if (isFreeSymExist) {
-            if (freeLmdClassNames == null)
-                freeLmdClassNames = new ArrayList<String>();
-            else {
-                for (String freeLmdClassName : freeLmdClassNames) {
-                    String fieldName = createSafeJavaId(freeLmdClassName);
-                    lmdCw.visitField(ACC_PUBLIC, fieldName, dottedClassNameToInternalClassName(freeLmdClassName), null,
-                            null).visitEnd();
-                }
-            }
-            freeLmdClassNames.add(fqLmdClassName);
-        }
-
-        locals = newLocals;
-        compileObject(invkGa, body, false);
-        locals = oldLocals;
-
-        if (isFreeSymExist) {
-            freeLmdClassNames.remove(fqLmdClassName);
-            if (freeLmdClassNames.isEmpty())
-                freeLmdClassNames = null;
-        }
-
-        invkGa.returnValue();
-        invkGa.endMethod();
-        lmdCw.visitEnd();
-
-        byte[] bytes = lmdCw.toByteArray();
-        //verifyASM(bytes);
-        //printASM(bytes);
-
-        if (isStaticCompile)
-            write(KL.shenClassRootDir, fqLmdSlashedClassName, bytes);
-
-        Class c = loadClass(fqLmdClassName, bytes);
-        ga.push(fqLmdClassName);
-        ga.invokeStatic(KLASM.CLASS_TYPE, KLMethodPool.forNameMethod);
-        ga.invokeVirtual(KLASM.CLASS_TYPE, KLMethodPool.newInstanceMethod);
-        ga.checkCast(Type.getType(fqLmdSlashedClassName));
-
-        int lmdLocal = ga.newLocal(KLASM.KLALAMBDA_TYPE);
+        int lmdLocal = ga.newLocal(KLASM.KLLAMBDA_TYPE);
+        generateKLLambdaInstance(ga, paramSize);
         ga.storeLocal(lmdLocal);
 
-        if (freeSyms != null) {
-            for (KLSymbol freeSym : freeSyms) {
-                KLLocal oldLocal = oldLocals.get(freeSym);
-                KLLocal newLocal = newLocals.get(freeSym);
+        ArrayList<KLSymbol> closedSyms = findClosedSymbols(oldLocals, body, newLmdParam);
+        int closedSymNum = (closedSyms == null) ?  0 : closedSyms.size();
+        boolean isClosedSymExist = closedSymNum > 0;
+        int closedEnvLocal = 0;
+        if (isClosedSymExist) {
+            String fqClosedEnvInternelClassName = new StringBuilder().append("Lcom/shenjvm/KLClosedEnv").
+                    append(String.valueOf(closedSymNum)).append(";").toString();
 
-                if (oldLocal.localType != KLLocal.LocalType.FREE_VARIABLE &&
-                        oldLocal.localType != KLLocal.LocalType.EXTERNAL_FREE_VARIABLE) {
-                    ga.loadLocal(lmdLocal);
+            Type closedEnvType = Type.getType(fqClosedEnvInternelClassName);
+            ga.newInstance(closedEnvType);
+            ga.dup();
+
+            int fieldId = 0;
+            for (KLSymbol closedSym : closedSyms) {
+                KLLocal oldLocal = oldLocals.get(closedSym);
+                if (oldLocal.localType == KLLocal.LocalType.FREE_VARIABLE) {
+                    ga.loadArg(0);
+                    ga.checkCast(oldLocal.field.decType);
+                    ga.getField(oldLocal.field.decType, oldLocal.field.name, KLASM.OBJECT_TYPE);
+                } else {
                     if (oldLocal.localType == KLLocal.LocalType.LET_BINDING)
                         ga.loadLocal(oldLocal.pos);
                     else
                         ga.loadArg(oldLocal.pos);
-                    ga.putField(lmdType, newLocal.field.name, KLASM.OBJECT_TYPE);
                 }
+                String fieldName = closedEnvFieldNamePrefix + ++fieldId;
+                Type valType = (oldLocal.valType == null) ? KLASM.OBJECT_TYPE : oldLocal.valType;
+                KLField field = new KLField(closedEnvType, valType, fieldName);
+                KLLocal local = new KLLocal(KLLocal.LocalType.FREE_VARIABLE, valType, field);
+                newLocals.put(closedSym, local);
             }
+
+            String closedEnvSig = createFunctionSignature("<init>", "void", closedSymNum);
+            ga.invokeConstructor(closedEnvType, Method.getMethod(closedEnvSig));
+
+            closedEnvLocal = ga.newLocal(closedEnvType);
+            ga.storeLocal(closedEnvLocal);
         }
 
-        if (isFreeSymExist && freeLmdClassNames != null) {
-            int idx = 0;
-            int maxIdx = freeLmdClassNames.size() - 1;
-            for (String freeLmdClassName : freeLmdClassNames) {
-                String fieldName = createSafeJavaId(freeLmdClassName);
-                ga.loadLocal(lmdLocal);
-                ga.loadThis();
-                String freeLmdInternalClassName = dottedClassNameToInternalClassName(freeLmdClassName);
-                if (maxIdx != idx) {
-                    String lastFreeSlashedLmdClassName = freeLmdClassNames.get(maxIdx).replaceAll("\\.", "/");
-                    ga.getField(Type.getType(lastFreeSlashedLmdClassName), fieldName,
-                            Type.getType(freeLmdInternalClassName.toString()));
-                }
-                ga.putField(lmdType, fieldName, Type.getType(freeLmdInternalClassName));
-                ++idx;
-            }
+        locals = newLocals;
+        compileObject(lmdGa, body, false);
+        locals = oldLocals;
+
+        lmdGa.returnValue();
+        lmdGa.endMethod();
+
+        ga.loadLocal(lmdLocal);
+
+        ga.push(type);
+        ga.push(lmdMethodName);
+        generateLambdaParameterTypes(ga, paramSize);
+        ga.invokeVirtual(KLASM.CLASS_TYPE, KLMethodPool.getDeclaredMethodMethod);
+
+        int methodLocal = ga.newLocal(KLASM.REFLECT_METHOD_TYPE);
+        ga.storeLocal(methodLocal);
+
+        ga.loadLocal(methodLocal);
+        ga.push(true);
+        ga.invokeVirtual(KLASM.REFLECT_METHOD_TYPE, KLMethodPool.setAccessibleMethod);
+
+        ga.loadLocal(methodLocal);
+        ga.putField(KLASM.KLLAMBDA_TYPE, "method", KLASM.REFLECT_METHOD_TYPE);
+
+        if (isClosedSymExist) {
+            ga.loadLocal(lmdLocal);
+            ga.loadLocal(closedEnvLocal);
+            ga.putField(KLASM.KLLAMBDA_TYPE, "closedEnv", KLASM.KLACLOSEDENV_TYPE);
         }
 
         ga.loadLocal(lmdLocal);
-        retTypeCand = KLASM.KLALAMBDA_TYPE;
+
+        retTypeCand = KLASM.KLLAMBDA_TYPE;
     }
 
     public Class loadClass(String className, byte[] bytes) {
@@ -705,14 +674,50 @@ public class KLCompiler implements Opcodes {
             compileObject(ga, ast.get(1), false);
             int argLocal = ga.newLocal(KLASM.OBJECT_TYPE);
             ga.storeLocal(argLocal);
+
             compileObject(ga, ast.get(0), false);
-            ga.checkCast(KLASM.KLALAMBDA_TYPE);
+            ga.checkCast(KLASM.KLLAMBDA_TYPE);
+            int lmdLocal = ga.newLocal(KLASM.KLLAMBDA_TYPE);
+            ga.storeLocal(lmdLocal);
+
+            ga.loadLocal(lmdLocal);
+            ga.getField(KLASM.KLLAMBDA_TYPE, "method", KLASM.REFLECT_METHOD_TYPE);
+            ga.push((Type)null);
+
+            ga.push(2);
+            ga.newArray(KLASM.OBJECT_TYPE);
+
+            ga.dup();
+            ga.push(0);
+            ga.loadLocal(lmdLocal);
+            ga.getField(KLASM.KLLAMBDA_TYPE, "closedEnv", KLASM.KLACLOSEDENV_TYPE);
+            ga.arrayStore(KLASM.OBJECT_TYPE);
+
+            ga.dup();
+            ga.push(1);
             ga.loadLocal(argLocal);
-            ga.invokeVirtual(KLASM.KLALAMBDA_TYPE, KLMethodPool.invokeMethod2);
+            ga.arrayStore(KLASM.OBJECT_TYPE);
+
+            ga.invokeVirtual(KLASM.REFLECT_METHOD_TYPE, KLMethodPool.invokeMethod3);
         } else if (ast.size() == 1) {
             compileObject(ga, ast.get(0), false);
-            ga.checkCast(KLASM.KLALAMBDA_TYPE);
-            ga.invokeVirtual(KLASM.KLALAMBDA_TYPE, KLMethodPool.invokeMethod1);
+            ga.checkCast(KLASM.KLLAMBDA_TYPE);
+            int lmdLocal = ga.newLocal(KLASM.KLLAMBDA_TYPE);
+            ga.storeLocal(lmdLocal);
+
+            ga.loadLocal(lmdLocal);
+            ga.getField(KLASM.KLLAMBDA_TYPE, "method", KLASM.REFLECT_METHOD_TYPE);
+            ga.push((Type)null);
+
+            ga.push(1);
+            ga.newArray(KLASM.OBJECT_TYPE);
+            ga.dup();
+            ga.push(0);
+            ga.loadLocal(lmdLocal);
+            ga.getField(KLASM.KLLAMBDA_TYPE, "closedEnv", KLASM.KLACLOSEDENV_TYPE);
+            ga.arrayStore(KLASM.OBJECT_TYPE);
+
+            ga.invokeVirtual(KLASM.REFLECT_METHOD_TYPE, KLMethodPool.invokeMethod3);
         } else {
             int paramSize = 1;
             int argSize = ast.size() - 1;
@@ -850,10 +855,33 @@ public class KLCompiler implements Opcodes {
         ga.goTo(catchEndLabel);
 
         ga.visitLabel(catchStartLabel);
+        int exLocal = ga.newLocal(KLASM.EXCEPTION_TYPE);
+        ga.storeLocal(exLocal);
+
         compileObject(ga, ast.get(2), false);
-        ga.checkCast(KLASM.KLALAMBDA_TYPE);
-        ga.swap();
-        ga.invokeVirtual(KLASM.KLALAMBDA_TYPE, KLMethodPool.invokeMethod2);
+        ga.checkCast(KLASM.KLLAMBDA_TYPE);
+        int lmdLocal = ga.newLocal(KLASM.KLLAMBDA_TYPE);
+        ga.storeLocal(lmdLocal);
+
+        ga.loadLocal(lmdLocal);
+        ga.getField(KLASM.KLLAMBDA_TYPE, "method", KLASM.REFLECT_METHOD_TYPE);
+        ga.push((Type)null);
+
+        ga.push(2);
+        ga.newArray(KLASM.OBJECT_TYPE);
+
+        ga.dup();
+        ga.push(0);
+        ga.loadLocal(lmdLocal);
+        ga.getField(KLASM.KLLAMBDA_TYPE, "closedEnv", KLASM.KLACLOSEDENV_TYPE);
+        ga.arrayStore(KLASM.OBJECT_TYPE);
+
+        ga.dup();
+        ga.push(1);
+        ga.loadLocal(exLocal);
+        ga.arrayStore(KLASM.OBJECT_TYPE);
+
+        ga.invokeVirtual(KLASM.REFLECT_METHOD_TYPE, KLMethodPool.invokeMethod3);
         retTypeCand = KLASM.OBJECT_TYPE;
 
         ga.visitLabel(catchEndLabel);
@@ -935,12 +963,14 @@ public class KLCompiler implements Opcodes {
         this.fqClassName = fqClassName;
         fqSlashedClassName = fqClassName.replaceAll("\\.", "/");
         fqInternalClassName = slashedClassNameToInternalClassName(fqSlashedClassName);
+        type = Type.getType(fqInternalClassName);
 
         cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         cw.visit(V1_6, ACC_PUBLIC, fqSlashedClassName, null, "java/lang/Object", null);
 
         Method runMethod = KLMethodPool.runMethod;
         runGa = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, runMethod, null, null, cw);
+
         compileObjects(runGa, ast, true);
         runGa.returnValue();
         runGa.endMethod();

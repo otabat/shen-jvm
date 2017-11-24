@@ -20,6 +20,10 @@ public class KLMethodPool {
             Method.getMethod("void <init>(Class,com.shenjvm.KLSymbol[],Class[],org.objectweb.asm.Type,String,boolean,java.lang.reflect.Method)");
     public static final Method klFunctionConstructorMethod2 =
             Method.getMethod("void <init>(com.shenjvm.KLSymbol[],Class[],org.objectweb.asm.Type,boolean,java.lang.reflect.Method)");
+    public static final Method klLambdaConstructorMethod1 =
+            Method.getMethod("void <init>(Class,java.lang.reflect.Method,boolean)");
+    public static final Method klLambdaConstructorMethod2 =
+            Method.getMethod("void <init>(Class,boolean)");
     public static final Method consructorMethod1 = Method.getMethod("void <init>()");
     public static final Method newInstanceMethod = Method.getMethod("Object newInstance()");
     public static final Method runMethod = Method.getMethod("Object run()");
