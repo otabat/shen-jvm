@@ -57,9 +57,9 @@ public class KLCompiler implements Opcodes {
     };
     public static java.lang.reflect.Method defineClassMethod;
     public static String[] javaIdSearchStrings = new String[]{"-", ".", ">", "<", "'", "!", "?", "=", "/", "*", "@",
-            "+", "#", "&", "$"};
+            "+", "#", "&", "~", "$"};
     public static String[] javaIdReplaceStrings = new String[]{"_", "$dt", "$gt", "$lt", "$qot", "$ex", "$qst", "$eq",
-            "$sl", "$ast", "$at", "$pls", "$sh", "$amp", "__"};
+            "$sl", "$ast", "$at", "$pls", "$sh", "$amp", "$tld", "__"};
 
     static {
         try {
