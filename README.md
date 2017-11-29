@@ -1,6 +1,6 @@
 # Shen-JVM
 
-Shen-JVM is a compiler of [Shen](http://shenlanguage.org/) programming language to Java bytecode written in Java 1.6.
+Shen-JVM is a compiler of [Shen](http://shenlanguage.org/) programming language to Java bytecode written in Java 6.
 
 Shen is a portable functional programming language developed by [Mark Tarver](http://marktarver.com/) that offers
 * Pattern matching
