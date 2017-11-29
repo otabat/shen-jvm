@@ -26,7 +26,9 @@ repositories {
 }
 
 dependencies {
-    compile group: 'org.ow2.asm', name: 'asm-all', version: '5.2'
+    compile group: 'org.ow2.asm', name: 'asm', version: '5.2'
+    compile group: 'org.ow2.asm', name: 'asm-commons', version: '5.2'
+    compile group: 'org.ow2.asm', name: 'asm-util', version: '5.2'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
     compile group: 'commons-io', name: 'commons-io', version: '2.5'
 }
