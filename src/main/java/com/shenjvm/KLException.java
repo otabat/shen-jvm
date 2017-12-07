@@ -1,5 +1,8 @@
 package com.shenjvm;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 public class KLException extends RuntimeException{
     public KLException() {
         super();
@@ -31,5 +34,12 @@ public class KLException extends RuntimeException{
             advanceSlowPointer = !advanceSlowPointer;
         }
         return throwable;
+    }
+
+    public static String getStringStackTrace(Throwable t) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        t.printStackTrace(pw);
+        return sw.toString();
     }
 }
