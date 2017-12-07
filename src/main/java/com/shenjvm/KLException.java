@@ -20,20 +20,20 @@ public class KLException extends RuntimeException{
         super(cause);
     }
 
-    public static Throwable getRootCause(Throwable throwable) {
-        Throwable slowPointer = throwable;
-        boolean advanceSlowPointer = false;
+    public static Throwable getRootCause(Throwable t) {
+        Throwable slowPtr = t;
+        boolean advSlowPtr = false;
 
         Throwable cause;
-        while ((cause = throwable.getCause()) != null) {
-            throwable = cause;
-            if (throwable == slowPointer)
-                throw new IllegalArgumentException("Loop detected", throwable);
-            if (advanceSlowPointer)
-                slowPointer = slowPointer.getCause();
-            advanceSlowPointer = !advanceSlowPointer;
+        while ((cause = t.getCause()) != null) {
+            t = cause;
+            if (t == slowPtr)
+                throw new IllegalArgumentException("Loop detected", t);
+            if (advSlowPtr)
+                slowPtr = slowPtr.getCause();
+            advSlowPtr = !advSlowPtr;
         }
-        return throwable;
+        return t;
     }
 
     public static String getStringStackTrace(Throwable t) {
