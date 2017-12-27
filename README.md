@@ -11,6 +11,8 @@ Shen is a portable functional programming language developed by [Mark Tarver](ht
 * An integrated fully functional Prolog
 * An inbuilt compiler-compiler, Shen-YACC
 
+The [Android version of Shen-JVM](https://chatolab.wordpress.com/2017/12/26/shen-programming-language-for-android/) is available on Google Play, which is a full featured Shen REPL with a customized keyboard.
+
 Other ports of Shen by the Shen-JVM author includes
 * [Shen-C](https://github.com/otabat/shen-c)
 * [iOS version of Shen-C](https://chatolab.wordpress.com/2017/07/10/shen-programming-language-for-ios/), which is a full featured Shen REPL with a customized keyboard for both iPhone and iPad available on the App Store
