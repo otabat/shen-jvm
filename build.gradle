@@ -1,6 +1,10 @@
 group 'com.shenjvm'
 version '0.2.3-SNAPSHOT'
 
+project.ext {
+    baseName = 'shen-jvm'
+}
+
 buildscript {
     repositories {
         maven {
@@ -9,11 +13,15 @@ buildscript {
     }
     dependencies {
         classpath "com.github.jengelman.gradle.plugins:shadow:2.0.1"
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     }
 }
 
 apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'com.jfrog.bintray'
 
 sourceCompatibility = 1.6
 
@@ -22,7 +30,7 @@ task wrapper(type: Wrapper) {
 }
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -31,6 +39,18 @@ dependencies {
     compile group: 'org.ow2.asm', name: 'asm-util', version: '5.2'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
     compile group: 'commons-io', name: 'commons-io', version: '2.5'
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    baseName = project.baseName
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    baseName = project.baseName
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
 
 task runKLMain(type: JavaExec) {
@@ -44,7 +64,7 @@ task compileAndRunKLMain(type: JavaExec, dependsOn: 'compileJava') {
 }
 
 task uberJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar, dependsOn: ['runKLMain']) {
-    baseName = 'shen-jvm'
+    baseName = project.baseName
     classifier = null
     version = project.version
     from sourceSets.main.output
@@ -55,7 +75,7 @@ task uberJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar, d
 }
 
 task devUberJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar, dependsOn: ['runKLMain']) {
-    baseName = 'shen-jvm'
+    baseName = project.baseName
     classifier = null
     version = null
     from sourceSets.main.output
@@ -71,4 +91,46 @@ task runDevUberJar(type: JavaExec) {
     main = "shen.main"
     jvmArgs = ['-Xms200m', '-Xmx2g', '-Xss4m']
     standardInput = System.in
+}
+
+shadowJar {
+    dependsOn 'runKLMain'
+    baseName = project.baseName
+    classifier = null
+    version = project.version
+    from sourceSets.main.output
+    configurations = [project.configurations.runtime]
+    manifest {
+        attributes 'Main-Class': 'shen.main'
+    }
+}
+
+publishing {
+    publications {
+        BintrayPublication(MavenPublication) { publication ->
+            project.shadow.component(publication)
+            artifact sourcesJar
+            artifact javadocJar
+            groupId project.group
+            artifactId project.baseName
+            version project.version
+        }
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_API_KEY')
+    publications = ['BintrayPublication']
+    //dryRun = true
+    pkg {
+        repo = 'maven'
+        name = 'shen-jvm'
+        licenses = ['BSD', 'MIT']
+        vcsUrl = 'https://github.com/otabat/shen-jvm.git'
+        version {
+            name = project.version
+            released = new Date()
+        }
+    }
 }
