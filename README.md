@@ -17,8 +17,37 @@ Other ports of Shen by the Shen-JVM author includes
 * [Shen-C](https://github.com/otabat/shen-c)
 * [iOS version of Shen-C](https://chatolab.wordpress.com/2017/07/10/shen-programming-language-for-ios/), which is a full featured Shen REPL with a customized keyboard for both iPhone and iPad available on the App Store
 
-## Download from releases
-Download the JAR file (shen-jvm-xxx.jar) from [releases](https://github.com/otabat/shen-jvm/releases)
+## Download from GitHub releases
+Download the JAR file (shen-jvm-x.x.x.jar) from [releases](https://github.com/otabat/shen-jvm/releases)
+
+## Download from JCenter
+### Gradle
+```
+dependencies {
+    compile 'compile 'com.shenjvm:shen-jvm:x.x.x'
+}
+
+repositories {
+    jcenter()
+}
+```
+
+### Maven
+```
+<dependency>
+    <groupId>com.shenjvm</groupId>
+    <artifactId>shen-jvm</artifactId>
+    <version>x.x.x</version>
+    <type>pom</type>
+</dependency>
+```
+```
+<repository>
+    <id>jcenter</id>
+    <name>jcenter-bintray</name>
+    <url>https://jcenter.bintray.com</url>
+</repository>
+```
 
 ## Build from sources
 Shen-JVM uses Gradle as a build tool.
@@ -45,33 +74,33 @@ or
 gradlew clean uberJar
 ```
 
-The JAR file will be generated as `PROJECT_HOME/build/libs/shen-jvm-xxx.jar`
+The JAR file will be generated as `PROJECT_HOME/build/libs/shen-jvm-x.x.x.jar`
 
 ## Run Shen-JVM (from releases)
 ```
-java -jar shen-jvm-xxx.jar
+java -jar shen-jvm-x.x.x.jar
 ```
 or if rlwrap is installed
 ```
-rlwrap java -jar shen-jvm-xxx.jar
+rlwrap java -jar shen-jvm-x.x.x.jar
 ```
 When running the Shen test suite, it is recommended to increase the heap size and thread stack size using the Java options such as below.
 Especially the thread stack size is important and otherwise a stack overflow might occur.
 ```
-java -Xms200m -Xmx2g -Xss4m -jar shen-jvm-xxx.jar
+java -Xms200m -Xmx2g -Xss4m -jar shen-jvm-x.x.x.jar
 ```
 or
 ```
-rlwrap java -Xms200m -Xmx2g -Xss4m -jar shen-jvm-xxx.jar
+rlwrap java -Xms200m -Xmx2g -Xss4m -jar shen-jvm-x.x.x.jar
 ```
 
 ## Run Shen-JVM (built from sources)
 ```
-java -jar ./build/libs/shen-jvm-xxx.jar
+java -jar ./build/libs/shen-jvm-x.x.x.jar
 ```
 or with rlwrap and Java options
 ```
-rlwrap java -Xms200m -Xmx2g -Xss4m -jar ./build/libs/shen-jvm-xxx.jar
+rlwrap java -Xms200m -Xmx2g -Xss4m -jar ./build/libs/shen-jvm-x.x.x.jar
 ```
 
 ## Run Shen Test
