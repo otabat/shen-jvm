@@ -50,7 +50,7 @@ public class KLCompiler implements Opcodes {
     public Label defunStartLabel;
     public boolean isStaticCompile = false;
     public static String[][] klFileNames = new String[][] {
-            {"kl", "toplevel"}, {"kl", "core"}, {"kl", "sys"}, {"kl", "sequent"}, {"kl", "yacc"},
+            {"kl", "toplevel"}, {"kl-replace", "core-replace"}, {"kl", "sys"}, {"kl", "sequent"}, {"kl", "yacc"},
             {"kl", "reader"}, {"kl", "prolog"}, {"kl", "track"}, {"kl", "load"}, {"kl-overwrite", "load-overwrite"},
             {"kl", "writer"}, {"kl", "macros"}, {"kl-replace", "declarations-replace"}, {"kl-replace", "types-replace"},
             {"kl", "t-star"}, {"kl-extension", "extension"}

@@ -35,7 +35,10 @@
 
 (define make
   -> (map (function make-file)
-          ["declarations-replace.shen" "types-replace.shen"]))
+          ["shen-replace/core-replace.shen" "shen-replace/declarations-replace.shen" "shen/load.shen" "shen/macros.shen"
+           "shen/prolog.shen" "shen/reader.shen" "shen/sequent.shen" "shen/sys.shen" "shen/t-star.shen"
+           "shen/toplevel.shen"  "shen/track.shen"  "shen-replace/types-replace.shen" "shen/writer.shen"
+           "shen/yacc.shen"]))
 
 \* Required to avoid errors when processing functions with system names *\
 (defcc shen.<name>
@@ -108,4 +111,4 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.c#34;
 
 ")
 
-
+(set shen.*check-sysfunc-in-name* false)
