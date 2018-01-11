@@ -86,9 +86,7 @@ public interface KLSymbolPool {
     public static final KLSymbol SHEN_UNBINDV = KLPrimitive.intern("shen.unbindv");
     public static final KLSymbol SHEN_VALVECTOR = KLPrimitive.intern("shen.valvector");
 
-    public static final KLSymbol QUIT = KLPrimitive.intern("quit");
-    public static final KLSymbol SHEN_JVM_FORWARD_DECLARE_FUNCTION = KLPrimitive.intern("sj.forward-declare-function");
-    public static final KLSymbol SHEN_JVM_PRINTLN = KLPrimitive.intern("sj.println");
+    public static final KLSymbol JVM_FORWARD_DECLARE_FUNCTION = KLPrimitive.intern("jvm.forward-declare-function");
 
     public static final KLSymbol EARMUFF_ARGV = KLPrimitive.intern("*argv*");
     public static final KLSymbol EARMUFF_HOME_DIRECTORY = KLPrimitive.intern("*home-directory*");

@@ -1,7 +1,0 @@
-(defun println (s)
-  (do (shen.prhush (shen.insert s "~S
-")
-            (stoutput))
-      s))
-
-(systemf println)

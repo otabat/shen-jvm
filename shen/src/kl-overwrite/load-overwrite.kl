@@ -1,24 +1,24 @@
-(defun sj.forward-declare-functions (file-name ast)
+(defun jvm.forward-declare-functions (file-name ast)
   (cond ((= ast ()) ())
         ((cons? ast)
-         (sj.forward-declare-functions
+         (jvm.forward-declare-functions
             file-name
             (if (cons? (hd ast))
                 (let head (hd (hd ast))
                   (do (cond ((= head defun)
-                             (sj.forward-declare-function file-name (hd ast)))
+                             (jvm.forward-declare-function file-name (hd ast)))
                             ((= head define)
-                             (sj.forward-declare-function file-name (shen.elim-def (hd ast))))
+                             (jvm.forward-declare-function file-name (shen.elim-def (hd ast))))
                             (true ()))
                       (tl ast)))
                 (tl ast))))
-        (true (shen.f_error sj.forward-declare-functions))))
+        (true (shen.f_error jvm.forward-declare-functions))))
 
 (defun load (V1651)
   (let Load
     (let Start (get-time run)
       (let ast (read-file V1651)
-        (do (sj.forward-declare-functions V1651 ast)
+        (do (jvm.forward-declare-functions V1651 ast)
             (let Result (shen.load-help (value shen.*tc*) ast)
               (let Finish (get-time run) (let Time (- Finish Start) (let Message (shen.prhush (cn "
 run time: " (cn (str Time) " secs

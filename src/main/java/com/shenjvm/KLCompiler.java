@@ -53,7 +53,7 @@ public class KLCompiler implements Opcodes {
             {"kl", "toplevel"}, {"kl-replace", "core-replace"}, {"kl", "sys"}, {"kl", "sequent"}, {"kl", "yacc"},
             {"kl", "reader"}, {"kl", "prolog"}, {"kl", "track"}, {"kl", "load"}, {"kl-overwrite", "load-overwrite"},
             {"kl", "writer"}, {"kl", "macros"}, {"kl-replace", "declarations-replace"}, {"kl-replace", "types-replace"},
-            {"kl", "t-star"}, {"kl-extension", "extension"}
+            {"kl", "t-star"}
     };
     public static java.lang.reflect.Method defineClassMethod;
     public static String[] javaIdSearchStrings = new String[]{"-", ".", ">", "<", "'", "!", "?", "=", "/", "*", "@",

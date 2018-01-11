@@ -213,15 +213,10 @@ public class KLInit {
     }
 
     public static void initExtensions() {
-        KLFunction quitFun = new KLFunction(KLExtension.class, new Class[]{}, KLASM.OBJECT_TYPE,"Object quit()", true);
-        KLFunction sjForwardDeclareFunctionFun = new KLFunction(KLExtension.class, new Class[]{Object.class,
-                Object.class}, KLASM.OBJECT_TYPE, "Object sjForwardDeclareFunction(Object,Object)", true);
-        KLFunction sjPrintlnFun = new KLFunction(KLExtension.class, new Class[]{Object.class}, KLASM.OBJECT_TYPE,
-                "Object sjPrintln(Object)", true);
+        KLFunction jvmForwardDeclareFunctionFun = new KLFunction(KLExtension.class, new Class[]{Object.class,
+                Object.class}, KLASM.OBJECT_TYPE, "Object jvmForwardDeclareFunction(Object,Object)", true);
 
-        KLSymbol.setFun(KLSymbolPool.QUIT, quitFun);
-        KLSymbol.setFun(KLSymbolPool.SHEN_JVM_FORWARD_DECLARE_FUNCTION, sjForwardDeclareFunctionFun);
-        KLSymbol.setFun(KLSymbolPool.SHEN_JVM_PRINTLN, sjPrintlnFun);
+        KLSymbol.setFun(KLSymbolPool.JVM_FORWARD_DECLARE_FUNCTION, jvmForwardDeclareFunctionFun);
     }
 
     public static void initGlobalVariables() {
