@@ -224,7 +224,7 @@ public class KLInit {
         KLPrimitive.set(KLSymbolPool.EARMUFF_HOME_DIRECTORY, "");
         KLPrimitive.set(KLSymbolPool.EARMUFF_IMPLEMENTATION, "Java");
         KLPrimitive.set(KLSymbolPool.EARMUFF_LANGUAGE, "Java");
-        KLPrimitive.set(KLSymbolPool.EARMUFF_PORT, "0.2.4");
+        KLPrimitive.set(KLSymbolPool.EARMUFF_PORT, "0.2.5");
         KLPrimitive.set(KLSymbolPool.EARMUFF_PORTERS, "Tatsuya Tsuda");
         KLPrimitive.set(KLSymbolPool.EARMUFF_STERROR, KL.STD_OUTPUT_STREAM);
         KLPrimitive.set(KLSymbolPool.EARMUFF_STOUTPUT, KL.STD_OUTPUT_STREAM);
