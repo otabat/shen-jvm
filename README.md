@@ -115,10 +115,7 @@ or the one-liner
 ```
 
 ## Quit Shen-JVM
-```shen
-(quit)
-```
-or with an exit status
+Pass an exit status
 ```shen
 (exit 1)
 ```
